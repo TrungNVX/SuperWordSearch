@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Solution
+obj
+bin
+
+# IDEs
+.vs
+.vscode
+.idea
+**/Assets/Plugins/Editor/JetBrains
+**/Assets/Plugins/Editor/JetBrains.meta
+
+# Unity
+Library
+Temp
+Logs
+UserSettings
+*.sln
+*.csproj
+*.userproperties
+/Build/
+*.log
