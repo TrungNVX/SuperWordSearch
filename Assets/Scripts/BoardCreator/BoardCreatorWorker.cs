@@ -161,7 +161,7 @@ public class BoardCreatorWorker : WorkerProgress
         workingBoard.cells = new List<List<Cell>>();
         workingBoard.placedWords = new List<object[]>();
         workingBoard.undos = new List<List<Undo>>();
-        
+
         //Init the working board cells
         for (int row = 0; row < workingBoard.boardConfig.rows; row++)
         {
@@ -170,32 +170,34 @@ public class BoardCreatorWorker : WorkerProgress
             {
                 Cell cell = new Cell
                 {
-                    position = new CellPosition(row,col),
+                    position = new CellPosition(row, col),
                     letter = Board.BlankChar,
                     canPlaceWord = new Dictionary<WordDirection, bool>(),
                     maxWordLength = new Dictionary<WordDirection, int>(),
                     letterReqs = new Dictionary<WordDirection, List<object[]>>()
                 };
-                bool[] canPlaceWord = {
-                    row > 0,																	                // Up
-                    row > 0 && col < workingBoard.boardConfig.cols - 1,								            // UpRight
-                    col < workingBoard.boardConfig.cols - 1,											        // Right
-                    row < workingBoard.boardConfig.rows - 1 && col < workingBoard.boardConfig.cols - 1,	        // DownRight
-                    row < workingBoard.boardConfig.rows - 1,											        // Down
-                    row < workingBoard.boardConfig.rows - 1 && col > 0,								            // DownLeft
-                    col > 0,																	                // Left
-                    row > 0 && col > 0															                // UpLeft
+                bool[] canPlaceWord =
+                {
+                    row > 0, // Up
+                    row > 0 && col < workingBoard.boardConfig.cols - 1, // UpRight
+                    col < workingBoard.boardConfig.cols - 1, // Right
+                    row < workingBoard.boardConfig.rows - 1 && col < workingBoard.boardConfig.cols - 1, // DownRight
+                    row < workingBoard.boardConfig.rows - 1, // Down
+                    row < workingBoard.boardConfig.rows - 1 && col > 0, // DownLeft
+                    col > 0, // Left
+                    row > 0 && col > 0 // UpLeft
                 };
 
-                int[] maxWordLength = {
-                    row + 1,																	                // Up
-                    Mathf.Min(row + 1, workingBoard.boardConfig.cols - col),							    // UpRight
-                    workingBoard.boardConfig.cols - col,												        // Right
-                    Mathf.Min(workingBoard.boardConfig.rows - row, workingBoard.boardConfig.cols - col),	// DownRight
-                    workingBoard.boardConfig.rows - row,												        // Down
-                    Mathf.Min(workingBoard.boardConfig.rows - row, col + 1),							    // DownLeft
-                    col + 1, 																	                // Left
-                    Mathf.Min(row + 1, col + 1), 												            // UpLeft
+                int[] maxWordLength =
+                {
+                    row + 1, // Up
+                    Mathf.Min(row + 1, workingBoard.boardConfig.cols - col), // UpRight
+                    workingBoard.boardConfig.cols - col, // Right
+                    Mathf.Min(workingBoard.boardConfig.rows - row, workingBoard.boardConfig.cols - col), // DownRight
+                    workingBoard.boardConfig.rows - row, // Down
+                    Mathf.Min(workingBoard.boardConfig.rows - row, col + 1), // DownLeft
+                    col + 1, // Left
+                    Mathf.Min(row + 1, col + 1), // UpLeft
                 };
 
                 for (int i = 0; i < (int)WordDirection.COUNT; i++)
@@ -245,9 +247,81 @@ public class BoardCreatorWorker : WorkerProgress
         }
 
         string word = workingBoard.boardConfig.words[wordIndex].Replace(" ", "");
-        
+        List<object[]> possibleWordStarts = GetAllPossibleWordStarts(workingBoard, word);
+
+        for (int i = 0; i < possibleWordStarts.Count; i++)
+        {
+            if (Stopping)
+            {
+                return false;
+            }
+
+            int randIndex = workingBoard.boardConfig.random.Next(i, possibleWordStarts.Count);
+            object[] wordStartToTry = possibleWordStarts[randIndex];
+
+            possibleWordStarts[randIndex] = possibleWordStarts[i];
+            possibleWordStarts[i] = wordStartToTry;
+
+            Cell startingCell = (Cell)wordStartToTry[0];
+        }
         return true;
     }
-    
+
+    private List<object[]> GetAllPossibleWordStarts(WorkingBoard workingBoard, string word)
+    {
+        List<object[]> possibleWordStarts = new List<object[]>();
+        for (int row = 0; row < workingBoard.boardConfig.rows; row++)
+        {
+            for (int col = 0; col < workingBoard.boardConfig.cols; col++)
+            {
+                Cell cell = workingBoard.cells[row][col];
+                if (cell.letter != Board.BlankChar && cell.letter != word[0])
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < (int)WordDirection.COUNT; i++)
+                {
+                    WordDirection wordDirection = (WordDirection)i;
+                    if (!cell.canPlaceWord[wordDirection])
+                    {
+                        continue;
+                    }
+
+                    if (word.Length > cell.maxWordLength[wordDirection])
+                    {
+                        continue;
+                    }
+
+                    List<object[]> letterReqs = cell.letterReqs[wordDirection];
+                    bool meetsAllReqs = true;
+                    for (int j = 0; j < letterReqs.Count; j++)
+                    {
+                        object[] letterReq = letterReqs[j];
+                        char letter = (char)letterReq[0];
+                        int dist = (int)letterReq[1];
+
+                        if (dist < word.Length && letter != word[dist])
+                        {
+                            meetsAllReqs = false;
+                            break;
+                        }
+                    }
+
+                    if (!meetsAllReqs)
+                    {
+                        continue;
+                    }
+
+                    object[] wordStart = { cell, wordDirection };
+
+                    possibleWordStarts.Add(wordStart);
+                }
+            }
+        }
+
+        return possibleWordStarts;
+    }
+
     #endregion
 }
