@@ -53,7 +53,7 @@ namespace BBG.WordSearch
 
 		#endregion
 
-		[MenuItem("Tools/Crazy Tools/Level Creator Window %t")]
+		[MenuItem("Tools/Bizzy Bee Games/Level Creator Window %t")]
 		public static void Init()
 		{
 			EditorWindow.GetWindow<LevelCreatorWindow>("Level Creator");
@@ -307,7 +307,8 @@ namespace BBG.WordSearch
 		private void WriteToLevelFile(Dictionary<string, object> levelFileJson)
 		{
 			// Get the files name
-			string levelFilename	= $"{wordFile.text.ToLower()}_{rows}x{cols}_{numLevelsGenerated}";
+			string prefix			= string.IsNullOrEmpty(filenamePrefix) ? "level" : filenamePrefix;
+			string levelFilename	= string.Format("{0}_{1}", prefix, numLevelsGenerated);
 
 			// Get the directory path
 			string dirPath = "";
