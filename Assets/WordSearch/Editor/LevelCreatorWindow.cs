@@ -53,7 +53,7 @@ namespace BBG.WordSearch
 
 		#endregion
 
-		[MenuItem("Tools/Bizzy Bee Games/Level Creator Window %t")]
+		[MenuItem("Tools/TrungNVX/Level Creator Window %t")]
 		public static void Init()
 		{
 			EditorWindow.GetWindow<LevelCreatorWindow>("Level Creator");
