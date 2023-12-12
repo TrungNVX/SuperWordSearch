@@ -100,9 +100,9 @@ namespace BBG
         /// </summary>
         public void Save()
         {
-            foreach (var saveEntry in saveables)
+            foreach (var entrySave in saveables)
             {
-                Save(saveEntry);
+                Save(entrySave);
             }
 
             SetSaveNextTime();

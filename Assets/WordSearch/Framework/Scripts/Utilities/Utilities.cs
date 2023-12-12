@@ -168,11 +168,11 @@ namespace BBG
 		{
 			string jsonString = "";
 			
-			if (data is IDictionary)
+			if (data is IDictionary dictionary)
 			{
 				string dictionaryItems = "";
 
-				foreach (DictionaryEntry item in (data as IDictionary))
+				foreach (DictionaryEntry item in dictionary)
 				{
 					if (!string.IsNullOrEmpty(dictionaryItems))
 					{
@@ -181,20 +181,18 @@ namespace BBG
 
 					if (addQuoteEscapes)
 					{
-						dictionaryItems += string.Format("\\\"{0}\\\":{1}", item.Key, ConvertToJsonString(item.Value, addQuoteEscapes));
+						dictionaryItems += $"\\\"{item.Key}\\\":{ConvertToJsonString(item.Value, addQuoteEscapes)}";
 					}
 					else
 					{
-						dictionaryItems += string.Format("\"{0}\":{1}", item.Key, ConvertToJsonString(item.Value, addQuoteEscapes));
+						dictionaryItems += $"\"{item.Key}\":{ConvertToJsonString(item.Value, addQuoteEscapes)}";
 					}
 				}
 
 				jsonString += "{" + dictionaryItems + "}";
 			}
-			else if (data is IList)
+			else if (data is IList list)
 			{
-				IList list = data as IList;
-				
 				jsonString += "[";
 				
 				for (int i = 0; i < list.Count; i++)
@@ -209,7 +207,7 @@ namespace BBG
 				
 				jsonString += "]";
 			}
-			else if (data is string || data is char)
+			else if (data is string or char)
 			{
 				// If the data is a string then we need to inclose it in quotation marks
 				if (addQuoteEscapes)
@@ -221,9 +219,9 @@ namespace BBG
 					jsonString += "\"" + data + "\"";
 				}
 			}
-			else if (data is bool)
+			else if (data is bool boolType)
 			{
-				jsonString += (bool)data ? "true" : "false";
+				jsonString += boolType ? "true" : "false";
 			}
 			else
 			{
